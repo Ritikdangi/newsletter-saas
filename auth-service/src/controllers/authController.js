@@ -55,3 +55,31 @@ export const login = async (req,res) =>{
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
+export const me = async (req,res)=>{ 
+    // console.log("userId type:", typeof req.user.userId, "value:", req.user.userId);
+     try{
+        const user = await prisma.user.findUnique({where : { id : req.user.userId} ,
+            include: { tenant: true }
+        })
+    
+        if(!user){
+            return res.status(404).json({ message: "User not found" });
+        }
+         
+      return res.json({
+            success : true, 
+            user : {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                tenant: user.tenant.name,
+            }
+         });
+     }
+     catch(error){
+        res.status(500).json({ message: "Server error in /me" , error });
+     }
+
+  }
