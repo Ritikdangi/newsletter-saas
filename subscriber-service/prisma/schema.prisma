@@ -8,19 +8,33 @@ datasource db {
   relationMode = "prisma"
 }
 
-model SubscriberList {
- id        String      @id @default(uuid())
-  name      String
-  tenantId  String
-  createdAt DateTime    @default(now())
-  subscribers Subscriber[]
-}
-
 model Subscriber {
   id        String   @id @default(uuid())
-  name      String?
   email     String   @unique
-  subscriberList   SubscriberList   @relation(fields: [ subscriberListId], references: [id])
-  subscriberListId  String
+  name      String?
   createdAt DateTime @default(now())
+
+  // Relations
+  lists     SubscriberOnList[] //  connects to join table
+}
+
+model SubscriberList {
+  id        String   @id @default(uuid())
+  name      String
+  tenantId  String   // from Auth Service (multi-tenant logic)
+  createdAt DateTime @default(now())
+
+  // Relations
+  subscribers SubscriberOnList[] //  connects to join table
+}
+
+model SubscriberOnList {
+  subscriberId     String
+  subscriberListId String
+  createdAt        DateTime @default(now())
+
+  subscriber     Subscriber     @relation(fields: [subscriberId], references: [id])
+  subscriberList SubscriberList @relation(fields: [subscriberListId], references: [id])
+
+  @@id([subscriberId, subscriberListId]) //  composite primary key
 }
